@@ -16,8 +16,8 @@ users = [
     ]
 
 @app.route('/users', methods=['GET'])
-@login_required
-@require_admin
+#@login_required
+#@require_admin
 def getUsers():
     try:
         
