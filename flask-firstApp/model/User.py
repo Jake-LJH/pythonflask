@@ -86,8 +86,6 @@ class User:
     def loginUser(cls,userJSON):
         try:
             dbConn=DatabasePool.getConnection()
-            #db_Info = dbConn.connection_id
-            #print(f"Connected to {db_Info}");
 
             print(userJSON)
             cursor = dbConn.cursor(dictionary=True)
@@ -110,6 +108,20 @@ class User:
                     return {"jwt":jwtToken}
                 else:
                     return {"jwt":""}
+        finally:
+            dbConn.close()
+
+    @classmethod
+    def login(cls, email):
+        try:
+            dbConn=DatabasePool.getConnection()
+            cursor = dbConn.cursor(dictionary=True)
+            sql = "select * from user where email= %s"
+            cursor.execute(sql,(email,))
+            user = cursor.fetchone() #at most 1 record since email is supposed to be unique
+            if user==None:
+                return {"jwt":""}
+            return user
         finally:
             dbConn.close()
 

@@ -1,4 +1,4 @@
-from flask import Flask,jsonify, render_template, request
+from flask import Flask,jsonify, render_template, request, redirect, url_for
 from model.User import User
 from validation.Validator import *
 from flask_cors import CORS
@@ -6,14 +6,6 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
-
-users = [
-    {"userid"   : 1,
-     "username" : "John", 
-     "email"    : "john@gmailer.com", 
-     "role"     : "member",
-     "password" : "abc123"}
-    ]
 
 @app.route('/users', methods=['GET'])
 #@login_required
@@ -51,7 +43,7 @@ def getOneUsers(userid):
         return jsonify(output),500
 
 #POST 1 new user - Insert
-@app.route('/users', methods=['POST'])
+@app.route('/user', methods=['POST'])
 @validateNum
 def insertUser():
     try:
@@ -143,19 +135,36 @@ def updateUser(userid):
         output={'Message':'Error Occurrence'}
         return jsonify(output),500
 
-#generating a resource, JWT - use POST method instead of GET
-@app.route('/users/login', methods=['POST'])
-def loginUsers():
+
+@app.route('/login', methods=['GET'])
+def login():
+    return render_template('login.html')
+
+@app.route('/')
+def home():
+    return render_template("mainPage.html")
+
+
+@app.route('/verifyUser', methods=["POST"])
+def verifyUser():
     try:
-        
-        userJson=request.json
-        output=User.loginUser(userJson)
-        print(output)
-        return jsonify(output)
+        error = None
+        htmlEmail = request.form['email']
+        htmlPassword = request.form['password']
+        print(htmlEmail, htmlPassword)
+        userSQLData = User.login(htmlEmail)
+        print(userSQLData)
+        if htmlPassword == userSQLData["password"]:
+            
+            print(userSQLData)
+            return render_template("mainPage.html")
+        else:
+            error = 'Invalid Credentials. Please try again.'
+            return render_template("login.html", error=error)
     except Exception as err:
         print(err)
-        return {},500
-
+        output = {"Exception": "err"}
+        return jsonify(output),500
 
 if __name__ == '__main__':
     app.run(debug=True)
